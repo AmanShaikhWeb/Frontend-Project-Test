@@ -1,23 +1,50 @@
-import logo from './logo.svg';
-import './App.css';
+// App.js
+
+import React, { useState, useEffect } from 'react';
+import MainView from './components/MainView';
+import Modal from './components/Modal';
+import { fetchData } from './api';
+import './styles.css';
 
 function App() {
+  const [posts, setPosts] = useState([]);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchData()
+      .then(data => {
+        setPosts(data);
+        setLoading(false);
+      })
+      .catch(error => {
+        setError(error);
+        setLoading(false);
+      });
+  }, []);
+
+  const openModal = (post) => {
+    setSelectedPost(post);
+  };
+
+  const closeModal = () => {
+    setSelectedPost(null);
+  };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container">
+      <h1>Posts</h1>
+      <MainView posts={posts} openModal={openModal} />
+      {selectedPost && <Modal post={selectedPost} closeModal={closeModal} />}
     </div>
   );
 }
